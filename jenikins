@@ -2,56 +2,40 @@ pipeline {
     agent any
 
     environment {
-        NODE_ENV = 'development'
+        IMAGE_NAME = 'priacc-flask-app'
+        CONTAINER_NAME = 'priacc-container'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Git-Clone') {
             steps {
-                echo 'Cloning repository...'
-                checkout scm
+                git url: 'https://github.com/Uday-rajanala/python.git', branch: 'main', credentialsId: 'github-token'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('List-Contents') {
             steps {
-                echo 'Installing dependencies...'
-                sh 'npm install'
+                sh 'ls -la'
             }
         }
 
-        stage('Run Tests') {
+        stage('Build-Docker') {
             steps {
-                echo 'Running tests...'
-                sh 'npm test'
+                sh "docker build -t $IMAGE_NAME ."
             }
         }
 
-        stage('Build') {
+        stage('Run-Docker') {
             steps {
-                echo 'Building project...'
-                sh 'npm run build'
-            }
-        }
-
-        stage('Deploy') {
-            when {
-                branch 'main'
-            }
-            steps {
-                echo 'Deploying to production...'
-                // Replace the line below with actual deployment steps
-                sh './deploy.sh'
+                sh "docker rm -f $CONTAINER_NAME || true"
+                sh "docker run -d --name $CONTAINER_NAME -p 5000:5000 $IMAGE_NAME"
             }
         }
     }
 
     post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
+        always {
+            deleteDir()
         }
     }
 }
