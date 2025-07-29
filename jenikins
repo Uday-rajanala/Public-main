@@ -1,42 +1,17 @@
 pipeline {
     agent any
-
     stages {
-        stage('Git-Clone') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Uday-rajanala/Public-main.git'
-            }
-        }
-
-        stage('List-Contents') {
-            steps {
-                sh 'pwd'
-                sh 'ls -R'
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
-                sh 'pip3 install -r requirements.txt'
+                sh '''
+                    pip3 install -r requirements.txt
+                '''
             }
         }
-
-        stage('Build and Test') {
+        stage('Run App') {
             steps {
-                sh 'echo build and Test Completed'
+                sh 'python3 app.py'
             }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh 'python3 jenikins/app.py'
-            }
-        }
-    }
-
-    post {
-        always {
-            cleanWs()
         }
     }
 }
